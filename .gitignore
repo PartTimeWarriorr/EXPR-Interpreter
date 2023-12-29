@@ -1,4 +1,5 @@
 *.exe
 
 my-interpreter/
+.vscode/
 side-test.cpp
