@@ -1,0 +1,4 @@
+a = 12346
+print a
+read a
+print a

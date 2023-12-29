@@ -1,0 +1,14 @@
+Line -> Var = Expr | Fun[Var] = Expr | print Expr | read Var
+Fun -> glavni bukvi
+Var -> malki bukvi
+Num -> digits (unsigned long int)
+Expr -> Expr + Term | Expr - Term | Term
+Term -> Term * Factor | Term / Factor | Term % Factor | Factor 
+Factor -> Var | Num | (Expr) | Fun[Expr]
+
+ExpressionPrint
+ExpressionRead
+ExpressionFunctionDefinition
+ExpressionFunctionCall
+ExpressionIfStatement
+ExpressionFor

@@ -1,0 +1,4 @@
+*.exe
+
+my-interpreter/
+side-test.cpp
