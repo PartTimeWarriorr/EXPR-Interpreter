@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <iostream>
 #include "arithmetics.h"
+#include "saved-expressions.h"
 
 using std::string;
 using std::unordered_map;
@@ -19,31 +20,15 @@ class Expression
     
 };
 
-class ExpressionFunctionDefinition : public Expression
-{
-
-};
-
-unordered_map<string, int> savedVariableNames = {{"aaa", 24}, {"bbb", 12}};
-unordered_map<string, const ExpressionFunctionDefinition*> savedFunctionDefinitions;
-
-
 class ExpressionConst : public Expression
 {
     public:
-    ExpressionConst* clone()
-    {
-        return new ExpressionConst(*this);
-    }
+    ExpressionConst* clone();
+    int getValue() const;
 
-    int getValue() const
-    {
-        return value;
-    }
+    ExpressionConst(int value);
 
-    ExpressionConst(int value) : value(value) {}
-
-    virtual ~ExpressionConst() = default;
+    virtual ~ExpressionConst() override = default;
 
     private:
     int value;
@@ -52,29 +37,16 @@ class ExpressionConst : public Expression
 class ExpressionVar : public Expression
 {
     public:
-    ExpressionVar* clone()
-    {
-        return new ExpressionVar(*this);
-    }
+    ExpressionVar* clone();
+    int getValue() const;
 
-    int getValue() const
-    {
-        return savedVariableNames[name];
-    }
+    string getName() const;
 
-    string getName() const
-    {
-        return name;
-    }
+    void assignValue(const Expression*&);
 
-    void assignValue(const Expression*& expression)
-    {
-        savedVariableNames[name] = expression->getValue();
-    }
+    ExpressionVar(string);
 
-    ExpressionVar(string name) : name(name) {}
-
-    virtual ~ExpressionVar() = default;
+    virtual ~ExpressionVar() override = default;
 
     private:
     string name;
@@ -84,11 +56,7 @@ class ExpressionBinaryOperator : public Expression
 {
     public:
     ExpressionBinaryOperator* clone();
-
-    int getValue() const
-    {
-        return computeExpression(symbol)(left->getValue(), right->getValue());  
-    }
+    int getValue() const;
 
     private:
     Expression* left;
@@ -100,32 +68,14 @@ class ExpressionBinaryOperator : public Expression
 class ExpressionAssignmentOperator : public Expression
 {
     public:
-    ExpressionAssignmentOperator* clone()
-    {
-        return new ExpressionAssignmentOperator(*this);
-    }
+    ExpressionAssignmentOperator* clone();
+    int getValue() const;
 
-    int getValue() const
-    {
-        return right->getValue();
-    }
+    void assignValueToVar();
 
-    void assignValueToVar()
-    {
-        left->assignValue(right);
-    }
+    ExpressionAssignmentOperator(ExpressionVar* var, Expression* value);
 
-    ExpressionAssignmentOperator(ExpressionVar* var, Expression* value) 
-    {
-        left = var->clone();
-        right = value->clone();
-    }
-
-    virtual ~ExpressionAssignmentOperator()
-    {
-        delete left;
-        delete right;
-    }
+    virtual ~ExpressionAssignmentOperator() override;
 
     private:
     ExpressionVar* left;
@@ -135,32 +85,14 @@ class ExpressionAssignmentOperator : public Expression
 class ExpressionRead : public Expression
 {
     public:
-    ExpressionRead* clone()
-    {
-        return new ExpressionRead(*this);
-    }
+    ExpressionRead* clone();
+    int getValue() const;
 
-    void readValueFromInput() const
-    {
-        int buffer;
-        cin >> buffer;
-        savedVariableNames[varToReceiveValue->getName()] = buffer;
-    }
+    void readValueFromInput() const;
 
-    int getValue() const
-    {
-        return varToReceiveValue->getValue();
-    }
+    ExpressionRead(ExpressionVar* toBeRead);
 
-    ExpressionRead(ExpressionVar* toBeRead)
-    {
-        varToReceiveValue = toBeRead->clone();
-    }
-
-    virtual ~ExpressionRead() override
-    {
-        delete varToReceiveValue;
-    }
+    virtual ~ExpressionRead() override;
 
     private:
     const ExpressionVar* varToReceiveValue;
@@ -169,33 +101,23 @@ class ExpressionRead : public Expression
 class ExpressionPrint : public Expression
 {
     public:
-    ExpressionPrint* clone()
-    {
-        return new ExpressionPrint(*this);
-    }
+    ExpressionPrint* clone();
+    int getValue() const;
 
-    int getValue() const
-    {
-        return toBePrinted->getValue();
-    }
+    void printTree();
 
-    void printTree()
-    {
-        cout << toBePrinted->getValue() << '\n';
-    }
+    ExpressionPrint(Expression* expressionToBePrinted);
 
-    ExpressionPrint(Expression* expressionToBePrinted)
-    {
-        toBePrinted = expressionToBePrinted->clone();
-    }
-
-    virtual ~ExpressionPrint() override
-    {
-        delete toBePrinted;
-    }
+    virtual ~ExpressionPrint() override;
 
     private:
     const Expression* toBePrinted;
+};
+
+
+class ExpressionFunctionDefinition : public Expression
+{
+
 };
 
 
