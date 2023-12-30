@@ -28,6 +28,54 @@ bool isVariableName(string name)
     return true;
 }
 
+bool isOperator(char symbol)
+{
+    return symbol == '+' || 
+           symbol == '-' || 
+           symbol == '*' || 
+           symbol == '%' || 
+           symbol == '/' || 
+           symbol == '^' || 
+           symbol == '(' || 
+           symbol == ')';
+}
+
+bool isFunctionDefinition(string name)
+{
+    size_t openPosition = name.find('[');
+
+    if(openPosition == string::npos)
+    {
+        return false;
+    }
+
+    string functionName = name.substr(0, openPosition);
+
+    for(char c : functionName)
+    {
+        if(c < 'A' || c > 'Z')
+        {
+            return false;
+        }
+    }
+
+    size_t closePosition = name.find(']');
+
+    if(closePosition != name.size() - 1)
+    {
+        return false;
+    }
+
+    string parameterName = name.substr(openPosition + 1, closePosition - openPosition - 1);
+
+    if(!isVariableName(parameterName))
+    {
+        return false;
+    }
+
+    return true;
+}
+
 bool isConstant(string name)
 {
     for(char c : name)
@@ -43,9 +91,96 @@ bool isConstant(string name)
 
 Expression* buildExpressionTree(Expression*& root)
 {
-    
+    return nullptr;
 }
 
+// Parse Expression to generalize all input, eg. a + 2*b% ABC[c] -> a + 2 * b % ABC[c]
+stringstream parseExpressionString(stringstream& ss)
+{
+    string expressionString = "";
+    string buffer;
+
+    while(ss >> buffer)
+    {
+        expressionString += buffer;
+    }
+
+    if(isOperator(expressionString[0]))
+    {
+        cout << "Syntax Error at Line #1\n";
+        return stringstream("");
+    }
+
+    stringstream expressionStream;
+
+    while(!expressionString.empty())
+    {
+        if(isdigit(expressionString[0]))
+        {
+            size_t end = expressionString.find_first_not_of("0123456789");
+            expressionStream << expressionString.substr(0, end) + ' ';
+            expressionString.erase(0, end);
+        }
+        else if(islower(expressionString[0]))
+        {
+            size_t end = expressionString.find_first_not_of("abcdefghijklmnopqrstuvwxyz");
+            string variableName = expressionString.substr(0, end);
+
+            if(!SavedExpressions::getInstance()->isSavedVariable(variableName))
+            {
+                cout << variableName << '\n';
+                cout << "Syntax Error at Line #2\n";
+                return stringstream("");
+            }
+
+            expressionStream << variableName + ' ';
+            expressionString.erase(0, end);
+        }
+        else if(isupper(expressionString[0]))
+        {   
+            size_t end = expressionString.find(']');
+            if(end == string::npos)
+            {
+                cout << "Syntax Error at Line #3\n";
+                return stringstream("");
+            }
+
+            size_t openBracket = expressionString.find('[');
+            if(openBracket == string::npos)
+            {
+                cout << "Syntax Error at Line #4\n";
+                return stringstream("");
+            }
+
+            if(!SavedExpressions::getInstance()->isSavedFunctionDefinition(expressionString.substr(0, openBracket)))
+            {
+                cout << "Syntax Error at Line #5\n";
+                return stringstream("");
+            }
+
+            if(!SavedExpressions::getInstance()->isSavedVariable(expressionString.substr(openBracket + 1, end - openBracket - 1)))
+            {   
+                cout << expressionString.substr(openBracket + 1, end - openBracket - 1) << '\n';
+                cout << "Syntax Error at Line #6\n";
+                return stringstream("");
+            }
+
+            expressionStream << expressionString.substr(0, end + 1) + ' ';
+            expressionString.erase(0, end + 1);
+        }
+        else if(isOperator(expressionString[0]))
+        {
+            expressionStream << expressionString[0];
+            expressionStream << " ";
+            expressionString.erase(0, 1);
+        }
+    }
+
+    return expressionStream;
+
+}
+
+// WIP
 void parseEXPRFile(string fileName)
 {   
     ifstream file(fileName);

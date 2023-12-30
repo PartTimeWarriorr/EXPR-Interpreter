@@ -1,4 +1,5 @@
 #include "expressions.h"
+#include "saved-expressions.h"
 
 // Const
 ExpressionConst* ExpressionConst::clone()

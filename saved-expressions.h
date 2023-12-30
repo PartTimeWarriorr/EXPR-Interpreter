@@ -21,6 +21,14 @@ class SavedExpressions
 
     int getSavedVariableValue(string);
 
+    bool isSavedVariable(string);
+    bool isSavedFunctionDefinition(string);
+
+    void saveFunction(string name)
+    {
+        savedFunctionDefinitions[name] = nullptr;
+    }
+
     // void saveFunction(string name, const ExpressionFunctionDefinition*& definition)
     // {
     //     return;

@@ -9,18 +9,21 @@ print D[c]
 
 
 //
-header and src separation
-(easy for interpreter and arith)
-(might take time for expressions)
-
-header with global variables
-(should be easy)
-
 figure out how to build expression tree
 maybe first build infix to rpn converter
 
-
 2*b%c -> 2b*c%
 
+aba+baa -> aba + baa
+a + 2* FUN[varr]%c/baa -> a + 2 * FUN[varr] % c / baa
+
 then if interpreter reaches undefined var name -> throw error
+
+
 //
+
+
+a = 12346
+print a
+read a
+print a

@@ -27,4 +27,13 @@ int SavedExpressions::getSavedVariableValue(string name)
     return savedVariableNames[name];
 }
 
+bool SavedExpressions::isSavedVariable(string name)
+{
+    return savedVariableNames.count(name);
+}
+bool SavedExpressions::isSavedFunctionDefinition(string name)
+{
+    return savedFunctionDefinitions.count(name);
+}
+
 SavedExpressions* SavedExpressions::instancePointer = nullptr;
