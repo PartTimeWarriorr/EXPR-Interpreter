@@ -27,3 +27,7 @@ a = 12346
 print a
 read a
 print a
+
+read a
+read baa
+a = 2 + 3*40/2*(baa + 2)

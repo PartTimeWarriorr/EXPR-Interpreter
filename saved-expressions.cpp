@@ -36,4 +36,20 @@ bool SavedExpressions::isSavedFunctionDefinition(string name)
     return savedFunctionDefinitions.count(name);
 }
 
+bool SavedExpressions::isFunctionParameterName(string name, string parameterName)
+{
+    return savedFunctionDefinitions[name]->getParameterName() == parameterName;    
+}
+
+void SavedExpressions::saveFunction(string name, const ExpressionFunctionDefinition* definition)
+{
+    savedFunctionDefinitions[name] = definition;
+}
+
+int SavedExpressions::getSavedFunctionValue(string name, int argument)
+{
+    // TODO
+    return 0;
+}
+
 SavedExpressions* SavedExpressions::instancePointer = nullptr;

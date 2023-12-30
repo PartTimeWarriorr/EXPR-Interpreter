@@ -48,6 +48,12 @@ int ExpressionBinaryOperator::getValue() const
     return computeExpression(symbol)(left->getValue(), right->getValue());
 }
 
+ExpressionBinaryOperator::ExpressionBinaryOperator(Expression* left, Expression* right)
+{
+    left = left->clone();
+    right = right->clone();
+}
+
 // Assignment Operator
 ExpressionAssignmentOperator* ExpressionAssignmentOperator::clone()
 {
@@ -128,5 +134,64 @@ ExpressionPrint::ExpressionPrint(Expression* expressionToBePrinted)
 ExpressionPrint::~ExpressionPrint()
 {
     delete toBePrinted;
+}
+
+// Function Definition
+ExpressionFunctionDefinition* ExpressionFunctionDefinition::clone()
+{
+    return new ExpressionFunctionDefinition(*this);
+}
+
+int ExpressionFunctionDefinition::getValue() const
+{
+    return 0;
+}
+
+ExpressionFunctionDefinition::ExpressionFunctionDefinition(string name, string parameterName, Expression* functionBody) :
+name(name), parameterName(parameterName)
+{
+    functionBody = functionBody->clone();
+    assignFunctionBody();
+}
+
+string ExpressionFunctionDefinition::getName()
+{
+    return name;
+}
+
+string ExpressionFunctionDefinition::getParameterName() const
+{
+    return parameterName;
+}
+
+ExpressionFunctionDefinition::~ExpressionFunctionDefinition() 
+{
+    delete functionBody;
+}
+
+void ExpressionFunctionDefinition::assignFunctionBody()
+{
+    SavedExpressions::getInstance()->saveFunction(name, this->clone());
+}
+
+// Function Call
+ExpressionFunctionCall* ExpressionFunctionCall::clone()
+{
+    return new ExpressionFunctionCall(*this);
+}
+
+int ExpressionFunctionCall::getValue() const
+{
+    SavedExpressions::getInstance()->getSavedFunctionValue(name, argument->getValue());
+}
+
+ExpressionFunctionCall::ExpressionFunctionCall(string name, Expression* argument) : name(name)
+{
+    argument = argument->clone();
+}
+
+ExpressionFunctionCall::~ExpressionFunctionCall()
+{
+    delete argument;
 }
 

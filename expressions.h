@@ -57,6 +57,8 @@ class ExpressionBinaryOperator : public Expression
     ExpressionBinaryOperator* clone();
     int getValue() const;
 
+    ExpressionBinaryOperator(Expression* left, Expression* right);
+
     private:
     Expression* left;
     Expression* right;
@@ -71,6 +73,7 @@ class ExpressionAssignmentOperator : public Expression
     int getValue() const;
 
     void assignValueToVar();
+    // void assignExpressionTreeToFunction();
 
     ExpressionAssignmentOperator(ExpressionVar* var, Expression* value);
 
@@ -116,13 +119,39 @@ class ExpressionPrint : public Expression
 
 class ExpressionFunctionDefinition : public Expression
 {
+    public:
+    ExpressionFunctionDefinition* clone();
+    int getValue() const;
 
+    ExpressionFunctionDefinition(string name, string parameterName, Expression* functionBody);
+
+    string getName();
+    string getParameterName() const;
+
+    virtual ~ExpressionFunctionDefinition() override;
+
+    void assignFunctionBody();
+
+    private:
+    string name;
+    string parameterName;
+    Expression* functionBody;
 };
 
 
 class ExpressionFunctionCall : public Expression
 {
+    public:
+    ExpressionFunctionCall* clone();
+    int getValue() const;
 
+    ExpressionFunctionCall(string name, Expression* argument);
+
+    virtual ~ExpressionFunctionCall() override;
+
+    private:
+    string name;
+    const Expression* argument; 
 };
 
 // bonus

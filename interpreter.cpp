@@ -40,6 +40,18 @@ bool isOperator(char symbol)
            symbol == ')';
 }
 
+bool isOperator(string symbol)
+{
+    return symbol == "+" || 
+           symbol == "-" || 
+           symbol == "*" || 
+           symbol == "%" || 
+           symbol == "/" || 
+           symbol == "^" || 
+           symbol == "(" || 
+           symbol == ")";
+}
+
 bool isFunctionDefinition(string name)
 {
     size_t openPosition = name.find('[');
@@ -178,6 +190,73 @@ stringstream parseExpressionString(stringstream& ss)
 
     return expressionStream;
 
+}
+
+stringstream convertExpressionToPostfix(stringstream& ss)
+{
+    string buffer;
+    queue<string> expressionQueue;
+    stack<string> expressionStack;
+
+    while(ss >> buffer)
+    {
+        
+        if(isConstant(buffer) || isVariableName(buffer) || isFunctionDefinition(buffer))
+        {
+            expressionQueue.push(buffer);
+        }
+        else if(buffer == "(")
+        {
+            expressionStack.push(buffer);
+        }
+        else if(buffer == ")")
+        {
+            
+            while(!expressionStack.empty() && expressionStack.top() != "(")
+            {
+                expressionQueue.push(expressionStack.top());
+                expressionStack.pop();
+            }
+
+            if(!expressionStack.empty())
+            {
+                expressionStack.pop();
+            }
+        }
+        else if(isOperator(buffer))
+        {
+
+            while(!expressionStack.empty() && isOperator(expressionStack.top()) && getOperatorPriority(expressionStack.top()) >= getOperatorPriority(buffer))
+            {
+                expressionQueue.push(expressionStack.top());
+                expressionStack.pop();
+            }
+
+            expressionStack.push(buffer);
+        }
+        else 
+        {
+            cout << "Syntax Error on Line #\n";
+            return stringstream();
+        }
+    }
+
+    while(!expressionStack.empty())
+    {
+        expressionQueue.push(expressionStack.top());
+        expressionStack.pop();
+    }
+
+    stringstream postfixStream;
+
+    while(!expressionQueue.empty())
+    {
+        postfixStream << expressionQueue.front();
+        postfixStream << " ";
+        expressionQueue.pop();
+    }
+
+    return postfixStream;
 }
 
 // WIP
