@@ -138,7 +138,7 @@ Expression* buildExpressionTree(stringstream& ss)
 }
 
 // Parse Expression to generalize all input, eg. a + 2*b% ABC[c] -> a + 2 * b % ABC[c]
-stringstream parseExpressionString(stringstream& ss)
+void parseExpressionString(stringstream& ss)
 {
     string expressionString = "";
     string buffer;
@@ -151,17 +151,18 @@ stringstream parseExpressionString(stringstream& ss)
     if(isOperator(expressionString[0]))
     {
         cout << "Syntax Error at Line #1\n";
-        return stringstream("");
+        return;
     }
 
-    stringstream expressionStream;
+    string resultStreamString;
 
     while(!expressionString.empty())
     {
         if(isdigit(expressionString[0]))
         {
             size_t end = expressionString.find_first_not_of("0123456789");
-            expressionStream << expressionString.substr(0, end) + ' ';
+            resultStreamString += expressionString.substr(0, end);
+            resultStreamString += ' ';
             expressionString.erase(0, end);
         }
         else if(islower(expressionString[0]))
@@ -173,10 +174,11 @@ stringstream parseExpressionString(stringstream& ss)
             {
                 cout << variableName << '\n';
                 cout << "Syntax Error at Line #2\n";
-                return stringstream("");
+                return;
             }
 
-            expressionStream << variableName + ' ';
+            resultStreamString += variableName;
+            resultStreamString += ' ';
             expressionString.erase(0, end);
         }
         else if(isupper(expressionString[0]))
@@ -185,45 +187,46 @@ stringstream parseExpressionString(stringstream& ss)
             if(end == string::npos)
             {
                 cout << "Syntax Error at Line #3\n";
-                return stringstream("");
+                return;
             }
 
             size_t openBracket = expressionString.find('[');
             if(openBracket == string::npos)
             {
                 cout << "Syntax Error at Line #4\n";
-                return stringstream("");
+                return;
             }
 
             if(!SavedExpressions::getInstance()->isSavedFunctionDefinition(expressionString.substr(0, openBracket)))
             {
                 cout << "Syntax Error at Line #5\n";
-                return stringstream("");
+                return;
             }
 
             if(!SavedExpressions::getInstance()->isSavedVariable(expressionString.substr(openBracket + 1, end - openBracket - 1)))
             {   
                 cout << expressionString.substr(openBracket + 1, end - openBracket - 1) << '\n';
                 cout << "Syntax Error at Line #6\n";
-                return stringstream("");
+                return;
             }
 
-            expressionStream << expressionString.substr(0, end + 1) + ' ';
+            resultStreamString += expressionString.substr(0, end + 1);
+            resultStreamString += ' ';
             expressionString.erase(0, end + 1);
         }
         else if(isOperator(expressionString[0]))
         {
-            expressionStream << expressionString[0];
-            expressionStream << " ";
+            resultStreamString += expressionString[0];
+            resultStreamString += " ";
             expressionString.erase(0, 1);
         }
     }
 
-    return expressionStream;
+    ss = stringstream(resultStreamString);
 
 }
 
-stringstream convertExpressionToPostfix(stringstream& ss)
+void convertExpressionToPostfix(stringstream& ss)
 {
     string buffer;
     queue<string> expressionQueue;
@@ -268,7 +271,7 @@ stringstream convertExpressionToPostfix(stringstream& ss)
         else 
         {
             cout << "Syntax Error on Line #\n";
-            return stringstream();
+            return;
         }
     }
 
@@ -278,16 +281,17 @@ stringstream convertExpressionToPostfix(stringstream& ss)
         expressionStack.pop();
     }
 
-    stringstream postfixStream;
+    string resultStreamString;
 
     while(!expressionQueue.empty())
     {
-        postfixStream << expressionQueue.front();
-        postfixStream << " ";
+        resultStreamString += expressionQueue.front();
+        resultStreamString += " ";
         expressionQueue.pop();
     }
 
-    return postfixStream;
+    ss = stringstream(resultStreamString);
+
 }
 
 // WIP
@@ -308,14 +312,11 @@ void parseEXPRFile(string fileName)
             {   
                 string varName = buffer;
                 ss >> buffer;
-                // assert(buffer == "=");
+                assert(buffer == "=");
 
-                // ss >> buffer;
-                // stringstream expressionStream(buffer);
-                stringstream parsedExpressionStream(parseExpressionString(ss));
-                stringstream convertedExpressionStream(convertExpressionToPostfix(parsedExpressionStream));
-                Expression* expressionTreeRoot = buildExpressionTree(convertedExpressionStream);
-                // int varValue = stoi(buffer);
+                parseExpressionString(ss);
+                convertExpressionToPostfix(ss);
+                Expression* expressionTreeRoot = buildExpressionTree(ss);
 
                 ExpressionAssignmentOperator assignment(new ExpressionVar(varName), expressionTreeRoot);
                 assignment.assignValueToVar();
@@ -325,21 +326,12 @@ void parseEXPRFile(string fileName)
             {
                 if(buffer == "print")
                 {   
-                    // ss >> buffer;
-                    // string toBePrinted = buffer;
-
-                    // if(isVariableName(toBePrinted))
-                    // {
-                    //     ExpressionPrint print(new ExpressionVar(toBePrinted));
-                    //     print.printTree();
-                    // }
-                    stringstream parsedExpressionStream(parseExpressionString(ss));
-                    stringstream convertedExpressionStream(convertExpressionToPostfix(parsedExpressionStream));
-                    Expression* expressionTreeRoot = buildExpressionTree(convertedExpressionStream);
+                    parseExpressionString(ss);
+                    convertExpressionToPostfix(ss);
+                    Expression* expressionTreeRoot = buildExpressionTree(ss);
 
                     ExpressionPrint print(expressionTreeRoot);
                     print.printTree();
-
                 }
 
                 if(buffer == "read")

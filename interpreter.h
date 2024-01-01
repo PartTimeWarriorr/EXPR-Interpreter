@@ -19,7 +19,7 @@ bool isVariableName(string name);
 bool isFunctionDefinition(string name);
 bool isConstant(string name);
 Expression* buildExpressionTree(stringstream& ss);
-stringstream parseExpressionString(stringstream& ss);
-stringstream convertExpressionToPostfix(stringstream& ss);
+void parseExpressionString(stringstream& ss);
+void convertExpressionToPostfix(stringstream& ss);
 void parseEXPRFile(string fileName);
 
