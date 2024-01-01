@@ -45,13 +45,24 @@ ExpressionBinaryOperator* ExpressionBinaryOperator::clone()
 
 int ExpressionBinaryOperator::getValue() const
 {
+
     return computeExpression(symbol)(left->getValue(), right->getValue());
 }
 
-ExpressionBinaryOperator::ExpressionBinaryOperator(Expression* left, Expression* right)
+ExpressionBinaryOperator::ExpressionBinaryOperator(char symbol) : 
+symbol(symbol), left(nullptr), right(nullptr) {} 
+
+ExpressionBinaryOperator::ExpressionBinaryOperator(char symbol, Expression* left, Expression* right) :
+symbol(symbol)
 {
-    left = left->clone();
-    right = right->clone();
+    this->left = left->clone();
+    this->right = right->clone();
+}
+
+ExpressionBinaryOperator::~ExpressionBinaryOperator()
+{
+    delete left;
+    delete right;
 }
 
 // Assignment Operator
@@ -182,7 +193,7 @@ ExpressionFunctionCall* ExpressionFunctionCall::clone()
 
 int ExpressionFunctionCall::getValue() const
 {
-    SavedExpressions::getInstance()->getSavedFunctionValue(name, argument->getValue());
+    return SavedExpressions::getInstance()->getSavedFunctionValue(name, argument->getValue());
 }
 
 ExpressionFunctionCall::ExpressionFunctionCall(string name, Expression* argument) : name(name)

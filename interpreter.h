@@ -18,7 +18,7 @@ bool isReservedWord(string name);
 bool isVariableName(string name);
 bool isFunctionDefinition(string name);
 bool isConstant(string name);
-Expression* buildExpressionTree(Expression*& root);
+Expression* buildExpressionTree(stringstream& ss);
 stringstream parseExpressionString(stringstream& ss);
 stringstream convertExpressionToPostfix(stringstream& ss);
 void parseEXPRFile(string fileName);

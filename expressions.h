@@ -57,9 +57,13 @@ class ExpressionBinaryOperator : public Expression
     ExpressionBinaryOperator* clone();
     int getValue() const;
 
-    ExpressionBinaryOperator(Expression* left, Expression* right);
+    ExpressionBinaryOperator(char symbol);
+    ExpressionBinaryOperator(char symbol, Expression* left, Expression* right);
 
-    private:
+    virtual ~ExpressionBinaryOperator() override;
+
+    public:
+    // private:
     Expression* left;
     Expression* right;
 
@@ -115,7 +119,6 @@ class ExpressionPrint : public Expression
     private:
     const Expression* toBePrinted;
 };
-
 
 class ExpressionFunctionDefinition : public Expression
 {

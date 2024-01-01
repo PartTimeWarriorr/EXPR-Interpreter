@@ -1,4 +1,12 @@
-a = 12346
-print a
-read a
-print a
+read two
+read three
+read four
+five = 2+3+0
+
+
+print two
+print three
+print four
+print five
+
+print two + three * four/five

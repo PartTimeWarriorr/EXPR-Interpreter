@@ -35,5 +35,11 @@ int main()
 
     parseEXPRFile("basicTest.txt");
 
-    // cout << savedVariableNames["a"];
+    // stringstream expr("2 3 + 0 +");
+    // Expression* expressionTreeRoot = buildExpressionTree(expr);
+    // cout << expressionTreeRoot->getValue();
+    // ExpressionPrint print(expressionTreeRoot);
+    // print.printTree();
+
+    // cout << stoi("2");
 }

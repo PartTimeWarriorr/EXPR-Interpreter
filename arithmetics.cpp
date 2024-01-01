@@ -31,7 +31,7 @@ int getOperatorPriority(string symbol)
 }
 
 std::function<int(int, int)> computeExpression(char symbol)
-{
+{   
     switch(symbol)
     {
         case '+' : return [](int a, int b){ return a + b; };

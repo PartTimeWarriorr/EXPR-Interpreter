@@ -101,9 +101,40 @@ bool isConstant(string name)
     return true;
 }
 
-Expression* buildExpressionTree(Expression*& root)
+Expression* buildExpressionTree(stringstream& ss)
 {
-    return nullptr;
+    stack<Expression*> treeNodeStack;
+
+    string expression;
+    Expression *leftOperand, *rightOperand;
+
+    while(ss >> expression)
+    {
+
+        if(isOperator(expression))
+        {  
+
+            rightOperand = treeNodeStack.top(); 
+            treeNodeStack.pop();
+
+            leftOperand = treeNodeStack.top(); 
+            treeNodeStack.pop();
+            
+            treeNodeStack.push(new ExpressionBinaryOperator(expression[0], leftOperand, rightOperand));
+        }
+        else if(isConstant(expression))
+        {
+
+            treeNodeStack.push(new ExpressionConst(stoi(expression)));
+        }
+        else if(isVariableName(expression))
+        {
+
+            treeNodeStack.push(new ExpressionVar(expression));
+        }
+    }
+
+    return treeNodeStack.top();
 }
 
 // Parse Expression to generalize all input, eg. a + 2*b% ABC[c] -> a + 2 * b % ABC[c]
@@ -277,12 +308,16 @@ void parseEXPRFile(string fileName)
             {   
                 string varName = buffer;
                 ss >> buffer;
-                assert(buffer == "=");
+                // assert(buffer == "=");
 
-                ss >> buffer;
-                int varValue = stoi(buffer);
+                // ss >> buffer;
+                // stringstream expressionStream(buffer);
+                stringstream parsedExpressionStream(parseExpressionString(ss));
+                stringstream convertedExpressionStream(convertExpressionToPostfix(parsedExpressionStream));
+                Expression* expressionTreeRoot = buildExpressionTree(convertedExpressionStream);
+                // int varValue = stoi(buffer);
 
-                ExpressionAssignmentOperator assignment(new ExpressionVar(varName), new ExpressionConst(varValue));
+                ExpressionAssignmentOperator assignment(new ExpressionVar(varName), expressionTreeRoot);
                 assignment.assignValueToVar();
             }
 
@@ -290,14 +325,21 @@ void parseEXPRFile(string fileName)
             {
                 if(buffer == "print")
                 {   
-                    ss >> buffer;
-                    string toBePrinted = buffer;
+                    // ss >> buffer;
+                    // string toBePrinted = buffer;
 
-                    if(isVariableName(toBePrinted))
-                    {
-                        ExpressionPrint print(new ExpressionVar(toBePrinted));
-                        print.printTree();
-                    }
+                    // if(isVariableName(toBePrinted))
+                    // {
+                    //     ExpressionPrint print(new ExpressionVar(toBePrinted));
+                    //     print.printTree();
+                    // }
+                    stringstream parsedExpressionStream(parseExpressionString(ss));
+                    stringstream convertedExpressionStream(convertExpressionToPostfix(parsedExpressionStream));
+                    Expression* expressionTreeRoot = buildExpressionTree(convertedExpressionStream);
+
+                    ExpressionPrint print(expressionTreeRoot);
+                    print.printTree();
+
                 }
 
                 if(buffer == "read")
