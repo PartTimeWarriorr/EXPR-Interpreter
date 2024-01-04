@@ -18,6 +18,7 @@ bool isReservedWord(string name);
 bool isVariableName(string name);
 bool isFunctionDefinition(string name);
 bool isConstant(string name);
+size_t getFunctionClosingBracket(const string& name);
 Expression* buildExpressionTree(stringstream& ss);
 void parseExpressionString(stringstream& ss);
 void convertExpressionToPostfix(stringstream& ss);

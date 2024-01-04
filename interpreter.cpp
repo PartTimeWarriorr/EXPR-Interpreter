@@ -101,6 +101,66 @@ bool isConstant(string name)
     return true;
 }
 
+bool isFunctionCall(string name)
+{
+    size_t openPosition = name.find('[');
+
+    if(openPosition == string::npos)
+    {
+        return false;
+    }
+
+    string functionName = name.substr(0, openPosition);
+
+    for(char c : functionName)
+    {
+        if(c < 'A' || c > 'Z')
+        {
+            return false;
+        }
+    }
+
+    if(name[name.length() - 1] != ']')
+    {
+        return false;
+    }
+
+    return true;
+}
+
+size_t getFunctionClosingBracket(const string& name)
+{
+    size_t openingBracket = name.find('[');
+    if(openingBracket == string::npos)
+    {
+        cout << "Syntax Error at Line #8\n";
+        return -1;
+    }
+
+    int openOccurrence = 0, closeOccurence = 0;
+
+    for(size_t i = openingBracket; i < name.length(); ++i)
+    {
+        switch(name[i])
+        {
+            case '[':
+                ++openOccurrence;
+                break;
+            case ']':
+                ++closeOccurence;
+                break;
+        }
+
+        if(openOccurrence == closeOccurence)
+        {
+            return i;
+        }
+    }
+
+    cout << "Syntax Error at Line #9\n";
+    return -1;
+}
+
 Expression* buildExpressionTree(stringstream& ss)
 {
     stack<Expression*> treeNodeStack;
@@ -132,12 +192,11 @@ Expression* buildExpressionTree(stringstream& ss)
 
             treeNodeStack.push(new ExpressionVar(expression));
         }
-        else if(isFunctionDefinition(expression))
+        else if(isFunctionCall(expression))
         {
             size_t openBracket = expression.find('[');
-            size_t end = expression.find(']');
             string functionNameString = expression.substr(0, openBracket);
-            string argumentString = expression.substr(openBracket + 1, end - openBracket - 1);
+            string argumentString = expression.substr(openBracket + 1, expression.length() - openBracket - 2);
             stringstream argumentStream(argumentString);
             
             parseExpressionString(argumentStream);
@@ -200,12 +259,14 @@ void parseExpressionString(stringstream& ss)
         }
         else if(isupper(expressionString[0]))
         {   
-            size_t end = expressionString.find(']');
-            if(end == string::npos)
-            {
-                cout << "Syntax Error at Line #3\n";
-                return;
-            }
+            // size_t end = expressionString.find(']');
+            // if(end == string::npos)
+            // {
+            //     cout << "Syntax Error at Line #3\n";
+            //     return;
+            // }
+
+            size_t end = getFunctionClosingBracket(expressionString);
 
             size_t openBracket = expressionString.find('[');
             if(openBracket == string::npos)
@@ -220,12 +281,13 @@ void parseExpressionString(stringstream& ss)
                 return;
             }
 
-            if(!SavedExpressions::getInstance()->isSavedVariable(expressionString.substr(openBracket + 1, end - openBracket - 1)) && 
-               expressionString.substr(openBracket + 1, end - openBracket - 1) != SavedExpressions::currentParameter)
-            {   
-                cout << "Syntax Error at Line #6\n";
-                return;
-            }
+            // if(!SavedExpressions::getInstance()->isSavedVariable(expressionString.substr(openBracket + 1, end - openBracket - 1)) && 
+            //    expressionString.substr(openBracket + 1, end - openBracket - 1) != SavedExpressions::currentParameter)
+            // {   
+            //     cout << expressionString.substr(openBracket + 1, end - openBracket - 1) << ' ' << SavedExpressions::currentParameter << '\n';
+            //     cout << "Syntax Error at Line #6\n";
+            //     return;
+            // }
 
             resultStreamString += expressionString.substr(0, end + 1);
             resultStreamString += ' ';
@@ -258,7 +320,7 @@ void convertExpressionToPostfix(stringstream& ss)
     while(ss >> buffer)
     {
         
-        if(isConstant(buffer) || isVariableName(buffer) || isFunctionDefinition(buffer))
+        if(isConstant(buffer) || isVariableName(buffer) || isFunctionCall(buffer))
         {
             expressionQueue.push(buffer);
         }
@@ -293,6 +355,7 @@ void convertExpressionToPostfix(stringstream& ss)
         }
         else 
         {
+            cout << buffer << '\n';
             cout << "Syntax Error on Line #\n";
             return;
         }
@@ -377,6 +440,7 @@ void parseEXPRFile(string fileName)
                 ss >> buffer;
                 assert(buffer == "=");
 
+                // string previousParameter = SavedExpressions::currentParameter;
                 SavedExpressions::currentParameter = parameterName;
 
                 parseExpressionString(ss);
@@ -384,6 +448,7 @@ void parseEXPRFile(string fileName)
                 Expression* expressionTreeRoot = buildExpressionTree(ss);
 
                 SavedExpressions::currentParameter = "";
+                // SavedExpressions::currentParameter = previousParameter;
 
                 ExpressionFunctionDefinition* newFunction = new ExpressionFunctionDefinition(functionName, parameterName, expressionTreeRoot);
                 newFunction->assignFunction();

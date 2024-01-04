@@ -1,0 +1,9 @@
+D[x] = 3+x-1
+Y[y] = 2+y
+Z[z] = D[200]+z
+a = D[2]
+
+print Y[Y[2]]
+
+print Z[Y[20]+D[a]+3]
+print Z[0]

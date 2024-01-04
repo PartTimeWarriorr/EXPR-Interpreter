@@ -33,7 +33,7 @@ int main()
     // if(islower('C'))
     //  cout << "yes";
 
-    parseEXPRFile("basicTest.txt");
+    parseEXPRFile("nested.txt");
 
     // SavedExpressions::getInstance()->printSavedFunctions();
 
