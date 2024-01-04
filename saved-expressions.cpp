@@ -1,4 +1,5 @@
 #include "saved-expressions.h"
+#include "interpreter.h"
 
 SavedExpressions::SavedExpressions() {}
 
@@ -41,15 +42,36 @@ bool SavedExpressions::isFunctionParameterName(string name, string parameterName
     return savedFunctionDefinitions[name]->getParameterName() == parameterName;    
 }
 
-void SavedExpressions::saveFunction(string name, const ExpressionFunctionDefinition* definition)
+void SavedExpressions::saveFunction(string name, ExpressionFunctionDefinition* definition)
 {
-    savedFunctionDefinitions[name] = definition;
+    savedFunctionDefinitions[name] = definition->clone();
+    
 }
 
-int SavedExpressions::getSavedFunctionValue(string name, int argument)
+ExpressionFunctionDefinition* SavedExpressions::getSavedFunctionBody(string name)
 {
-    // TODO
-    return 0;
+    return savedFunctionDefinitions[name];
 }
+
+// int SavedExpressions::getSavedFunctionValue(string name, int argument)
+// {
+//     // TODO
+//     SavedExpressions::currentParameter = savedFunctionDefinitions[name]->getParameterName();
+//     SavedExpressions::currentArgument = argument;
+
+// }
 
 SavedExpressions* SavedExpressions::instancePointer = nullptr;
+
+string SavedExpressions::currentParameter = "";
+int SavedExpressions::currentArgument = 0;
+
+
+//testing purposes only 
+void SavedExpressions::printSavedFunctions()
+{
+    for(auto fun : savedFunctionDefinitions)
+    {
+        cout << fun.first << ' ' << fun.second->getParameterName() << ' ' << (fun.second == nullptr) <<'\n';
+    }
+}

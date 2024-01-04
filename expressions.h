@@ -77,7 +77,6 @@ class ExpressionAssignmentOperator : public Expression
     int getValue() const;
 
     void assignValueToVar();
-    // void assignExpressionTreeToFunction();
 
     ExpressionAssignmentOperator(ExpressionVar* var, Expression* value);
 
@@ -127,13 +126,13 @@ class ExpressionFunctionDefinition : public Expression
     int getValue() const;
 
     ExpressionFunctionDefinition(string name, string parameterName, Expression* functionBody);
-
-    string getName();
+    string getName() const;
     string getParameterName() const;
+    Expression* getFunctionBody() const;
 
     virtual ~ExpressionFunctionDefinition() override;
 
-    void assignFunctionBody();
+    void assignFunction();
 
     private:
     string name;

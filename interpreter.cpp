@@ -78,12 +78,12 @@ bool isFunctionDefinition(string name)
         return false;
     }
 
-    string parameterName = name.substr(openPosition + 1, closePosition - openPosition - 1);
+    // string parameterName = name.substr(openPosition + 1, closePosition - openPosition - 1);
 
-    if(!isVariableName(parameterName))
-    {
-        return false;
-    }
+    // if(!isVariableName(parameterName))
+    // {
+    //     return false;
+    // }
 
     return true;
 }
@@ -132,7 +132,25 @@ Expression* buildExpressionTree(stringstream& ss)
 
             treeNodeStack.push(new ExpressionVar(expression));
         }
+        else if(isFunctionDefinition(expression))
+        {
+            size_t openBracket = expression.find('[');
+            size_t end = expression.find(']');
+            string functionNameString = expression.substr(0, openBracket);
+            string argumentString = expression.substr(openBracket + 1, end - openBracket - 1);
+            stringstream argumentStream(argumentString);
+            
+            parseExpressionString(argumentStream);
+
+            convertExpressionToPostfix(argumentStream);
+            
+
+            Expression* argumentTreeRoot = buildExpressionTree(argumentStream);
+
+            treeNodeStack.push(new ExpressionFunctionCall(functionNameString, argumentTreeRoot));
+        }
     }
+
 
     return treeNodeStack.top();
 }
@@ -170,9 +188,8 @@ void parseExpressionString(stringstream& ss)
             size_t end = expressionString.find_first_not_of("abcdefghijklmnopqrstuvwxyz");
             string variableName = expressionString.substr(0, end);
 
-            if(!SavedExpressions::getInstance()->isSavedVariable(variableName))
+            if(!SavedExpressions::getInstance()->isSavedVariable(variableName) && variableName != SavedExpressions::currentParameter)
             {
-                cout << variableName << '\n';
                 cout << "Syntax Error at Line #2\n";
                 return;
             }
@@ -203,9 +220,9 @@ void parseExpressionString(stringstream& ss)
                 return;
             }
 
-            if(!SavedExpressions::getInstance()->isSavedVariable(expressionString.substr(openBracket + 1, end - openBracket - 1)))
+            if(!SavedExpressions::getInstance()->isSavedVariable(expressionString.substr(openBracket + 1, end - openBracket - 1)) && 
+               expressionString.substr(openBracket + 1, end - openBracket - 1) != SavedExpressions::currentParameter)
             {   
-                cout << expressionString.substr(openBracket + 1, end - openBracket - 1) << '\n';
                 cout << "Syntax Error at Line #6\n";
                 return;
             }
@@ -219,6 +236,12 @@ void parseExpressionString(stringstream& ss)
             resultStreamString += expressionString[0];
             resultStreamString += " ";
             expressionString.erase(0, 1);
+        }
+        else 
+        {
+            cout << expressionString << '\n';
+            cout << "Syntax Error at Line #7\n";
+            return;
         }
     }
 
@@ -342,6 +365,28 @@ void parseEXPRFile(string fileName)
                     ExpressionRead read(new ExpressionVar(toBeRead));
                     read.readValueFromInput();
                 }
+            }
+
+            if(isFunctionDefinition(buffer))
+            {
+                size_t openBracket = buffer.find('[');
+                string functionName = buffer.substr(0, openBracket);
+                size_t end = buffer.find(']');
+                string parameterName = buffer.substr(openBracket + 1, end - openBracket - 1);
+
+                ss >> buffer;
+                assert(buffer == "=");
+
+                SavedExpressions::currentParameter = parameterName;
+
+                parseExpressionString(ss);
+                convertExpressionToPostfix(ss);
+                Expression* expressionTreeRoot = buildExpressionTree(ss);
+
+                SavedExpressions::currentParameter = "";
+
+                ExpressionFunctionDefinition* newFunction = new ExpressionFunctionDefinition(functionName, parameterName, expressionTreeRoot);
+                newFunction->assignFunction();
             }
         }
     }

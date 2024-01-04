@@ -7,7 +7,7 @@ class SavedExpressions
     static SavedExpressions* instancePointer;
 
     unordered_map<string, int> savedVariableNames;
-    unordered_map<string, const ExpressionFunctionDefinition*> savedFunctionDefinitions;
+    unordered_map<string, ExpressionFunctionDefinition*> savedFunctionDefinitions;
 
     SavedExpressions();
 
@@ -25,6 +25,12 @@ class SavedExpressions
     bool isSavedFunctionDefinition(string);
     bool isFunctionParameterName(string, string);
 
-    void saveFunction(string name, const ExpressionFunctionDefinition* definition);
-    int getSavedFunctionValue(string name, int argument);
+    void saveFunction(string name, ExpressionFunctionDefinition* definition);
+    // int getSavedFunctionValue(string name, int argument);
+    ExpressionFunctionDefinition* getSavedFunctionBody(string);
+
+    static string currentParameter;
+    static int currentArgument;
+
+    void printSavedFunctions();
 };

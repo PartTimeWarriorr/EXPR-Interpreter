@@ -1,5 +1,6 @@
 #include "expressions.h"
 #include "saved-expressions.h"
+#include "interpreter.h"
 
 // Const
 ExpressionConst* ExpressionConst::clone()
@@ -22,6 +23,11 @@ ExpressionVar* ExpressionVar::clone()
 
 int ExpressionVar::getValue() const
 {
+    if(SavedExpressions::currentParameter != "" && SavedExpressions::currentParameter == this->name)
+    {
+        return SavedExpressions::currentArgument;
+    }
+
     return SavedExpressions::getInstance()->getSavedVariableValue(name);
 }
 
@@ -155,17 +161,17 @@ ExpressionFunctionDefinition* ExpressionFunctionDefinition::clone()
 
 int ExpressionFunctionDefinition::getValue() const
 {
-    return 0;
+    return functionBody->getValue();
 }
 
 ExpressionFunctionDefinition::ExpressionFunctionDefinition(string name, string parameterName, Expression* functionBody) :
 name(name), parameterName(parameterName)
 {
-    functionBody = functionBody->clone();
-    assignFunctionBody();
+    this->functionBody = functionBody->clone();
 }
 
-string ExpressionFunctionDefinition::getName()
+
+string ExpressionFunctionDefinition::getName() const
 {
     return name;
 }
@@ -175,12 +181,17 @@ string ExpressionFunctionDefinition::getParameterName() const
     return parameterName;
 }
 
+Expression* ExpressionFunctionDefinition::getFunctionBody() const
+{
+    return this->functionBody;
+}
+
 ExpressionFunctionDefinition::~ExpressionFunctionDefinition() 
 {
     delete functionBody;
 }
 
-void ExpressionFunctionDefinition::assignFunctionBody()
+void ExpressionFunctionDefinition::assignFunction()
 {
     SavedExpressions::getInstance()->saveFunction(name, this->clone());
 }
@@ -193,12 +204,24 @@ ExpressionFunctionCall* ExpressionFunctionCall::clone()
 
 int ExpressionFunctionCall::getValue() const
 {
-    return SavedExpressions::getInstance()->getSavedFunctionValue(name, argument->getValue());
+
+    ExpressionFunctionDefinition* functionDefinition = SavedExpressions::getInstance()->getSavedFunctionBody(this->name);
+
+    SavedExpressions::currentParameter = functionDefinition->getParameterName();
+    SavedExpressions::currentArgument = this->argument->getValue();
+    
+    int result = functionDefinition->getValue();
+
+    SavedExpressions::currentParameter = "";
+    SavedExpressions::currentArgument = 0;
+
+    return result;
 }
 
-ExpressionFunctionCall::ExpressionFunctionCall(string name, Expression* argument) : name(name)
+ExpressionFunctionCall::ExpressionFunctionCall(string name, Expression* argument) : 
+name(name)
 {
-    argument = argument->clone();
+    this->argument = argument->clone();
 }
 
 ExpressionFunctionCall::~ExpressionFunctionCall()

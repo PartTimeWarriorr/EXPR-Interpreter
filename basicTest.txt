@@ -1,12 +1,3 @@
-read two
-read three
-read four
-five = 2+3+0
-
-
-print two
-print three
-print four
-print five
-
-print two + three * four/five
+D[x] = 3+x-1
+Y[y] = 2+y
+print D[Y[2]]
