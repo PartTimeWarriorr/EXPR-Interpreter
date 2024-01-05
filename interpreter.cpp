@@ -247,7 +247,7 @@ void parseExpressionString(stringstream& ss)
             size_t end = expressionString.find_first_not_of("abcdefghijklmnopqrstuvwxyz");
             string variableName = expressionString.substr(0, end);
 
-            if(!SavedExpressions::getInstance()->isSavedVariable(variableName) && variableName != SavedExpressions::currentParameter)
+            if(!SavedExpressions::getInstance()->isSavedVariable(variableName) && variableName != SavedExpressions::getInstance()->topArgumentStack().first)
             {
                 cout << "Syntax Error at Line #2\n";
                 return;
@@ -440,15 +440,13 @@ void parseEXPRFile(string fileName)
                 ss >> buffer;
                 assert(buffer == "=");
 
-                // string previousParameter = SavedExpressions::currentParameter;
-                SavedExpressions::currentParameter = parameterName;
+                SavedExpressions::getInstance()->pushArgumentStack(parameterName, 0);
 
                 parseExpressionString(ss);
                 convertExpressionToPostfix(ss);
                 Expression* expressionTreeRoot = buildExpressionTree(ss);
 
-                SavedExpressions::currentParameter = "";
-                // SavedExpressions::currentParameter = previousParameter;
+                SavedExpressions::getInstance()->popArgumentStack();
 
                 ExpressionFunctionDefinition* newFunction = new ExpressionFunctionDefinition(functionName, parameterName, expressionTreeRoot);
                 newFunction->assignFunction();

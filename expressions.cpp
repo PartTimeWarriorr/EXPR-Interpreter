@@ -23,9 +23,9 @@ ExpressionVar* ExpressionVar::clone()
 
 int ExpressionVar::getValue() const
 {
-    if(SavedExpressions::currentParameter != "" && SavedExpressions::currentParameter == this->name)
+    if(!SavedExpressions::getInstance()->isEmptyArgumentStack() && SavedExpressions::getInstance()->topArgumentStack().first == this->name)
     {
-        return SavedExpressions::currentArgument;
+        return SavedExpressions::getInstance()->topArgumentStack().second;
     }
 
     return SavedExpressions::getInstance()->getSavedVariableValue(name);
@@ -206,14 +206,12 @@ int ExpressionFunctionCall::getValue() const
 {
 
     ExpressionFunctionDefinition* functionDefinition = SavedExpressions::getInstance()->getSavedFunctionBody(this->name);
-
-    SavedExpressions::currentParameter = functionDefinition->getParameterName();
-    SavedExpressions::currentArgument = this->argument->getValue();
     
+    SavedExpressions::getInstance()->pushArgumentStack(functionDefinition->getParameterName(), argument->getValue());
+
     int result = functionDefinition->getValue();
 
-    SavedExpressions::currentParameter = "";
-    SavedExpressions::currentArgument = 0;
+    SavedExpressions::getInstance()->popArgumentStack();
 
     return result;
 }

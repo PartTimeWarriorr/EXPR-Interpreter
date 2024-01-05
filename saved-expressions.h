@@ -1,5 +1,10 @@
 #pragma once
 #include "expressions.h"
+#include <stack>
+#include <utility>
+
+using std::stack;
+using std::pair;
 
 class SavedExpressions
 {
@@ -8,6 +13,7 @@ class SavedExpressions
 
     unordered_map<string, int> savedVariableNames;
     unordered_map<string, ExpressionFunctionDefinition*> savedFunctionDefinitions;
+    stack<pair<string, int>> functionArgumentStack;
 
     SavedExpressions();
 
@@ -26,11 +32,12 @@ class SavedExpressions
     bool isFunctionParameterName(string, string);
 
     void saveFunction(string name, ExpressionFunctionDefinition* definition);
-    // int getSavedFunctionValue(string name, int argument);
     ExpressionFunctionDefinition* getSavedFunctionBody(string);
 
-    static string currentParameter;
-    static int currentArgument;
-
     void printSavedFunctions();
+
+    void popArgumentStack();
+    void pushArgumentStack(string, int);
+    pair<string, int> topArgumentStack();
+    bool isEmptyArgumentStack();
 };

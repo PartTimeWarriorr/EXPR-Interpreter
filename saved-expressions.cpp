@@ -53,19 +53,7 @@ ExpressionFunctionDefinition* SavedExpressions::getSavedFunctionBody(string name
     return savedFunctionDefinitions[name];
 }
 
-// int SavedExpressions::getSavedFunctionValue(string name, int argument)
-// {
-//     // TODO
-//     SavedExpressions::currentParameter = savedFunctionDefinitions[name]->getParameterName();
-//     SavedExpressions::currentArgument = argument;
-
-// }
-
 SavedExpressions* SavedExpressions::instancePointer = nullptr;
-
-string SavedExpressions::currentParameter = "";
-int SavedExpressions::currentArgument = 0;
-
 
 //testing purposes only 
 void SavedExpressions::printSavedFunctions()
@@ -74,4 +62,24 @@ void SavedExpressions::printSavedFunctions()
     {
         cout << fun.first << ' ' << fun.second->getParameterName() << ' ' << (fun.second == nullptr) <<'\n';
     }
+}
+
+void SavedExpressions::popArgumentStack()
+{
+    functionArgumentStack.pop();
+}
+
+void SavedExpressions::pushArgumentStack(string parameter, int value)
+{
+    functionArgumentStack.push(pair<string, int>(parameter, value));
+}
+
+pair<string, int> SavedExpressions::topArgumentStack()
+{
+    return functionArgumentStack.top();
+}
+
+bool SavedExpressions::isEmptyArgumentStack()
+{
+    return functionArgumentStack.empty();
 }
