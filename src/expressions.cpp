@@ -1,6 +1,6 @@
-#include "expressions.h"
-#include "saved-expressions.h"
-#include "interpreter.h"
+#include "../include/expressions.h"
+#include "../include/saved-expressions.h"
+#include "../include/interpreter.h"
 
 // Const
 ExpressionConst* ExpressionConst::clone()

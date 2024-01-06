@@ -1,4 +1,4 @@
-#include "arithmetics.h"
+#include "../include/arithmetics.h"
 
 int getOperatorPriority(char symbol)
 {

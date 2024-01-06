@@ -1,4 +1,4 @@
-#include "interpreter.h"
+#include "../include/interpreter.h"
 
 bool isReservedWord(string name)
 {
