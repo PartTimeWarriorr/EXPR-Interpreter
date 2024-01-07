@@ -1,3 +1,5 @@
 D[x] = 32 * x
+a = 67
+print D[2+a]
 
-print D[x2]
+read a

@@ -216,6 +216,10 @@ Expression* buildExpressionTree(stringstream& ss)
         }
     }
 
+    if(treeNodeStack.size() != 1)
+    {
+        throw std::invalid_argument("Missing operator.\nSyntax Error at Line #");
+    }
 
     return treeNodeStack.top();
 }
@@ -257,7 +261,7 @@ void parseExpressionString(stringstream& ss)
             size_t end = expressionString.find_first_not_of("abcdefghijklmnopqrstuvwxyz");
             string variableName = expressionString.substr(0, end);
 
-            if(!SavedExpressions::getInstance()->isSavedVariable(variableName) && variableName != SavedExpressions::getInstance()->topArgumentStack().first)
+            if(!SavedExpressions::getInstance()->isSavedVariable(variableName) && (SavedExpressions::getInstance()->isEmptyArgumentStack() || variableName != SavedExpressions::getInstance()->topArgumentStack().first))
             {
                 throw std::invalid_argument("Unrecognized variable name.\nSyntax Error at Line #");
             }
@@ -386,7 +390,13 @@ void parseEXPRFile(string fileName)
             {   
                 string varName = buffer;
                 ss >> buffer;
-                assert(buffer == "=");
+                
+                if(buffer != "=")
+                {
+                    cout << "Syntax Error at Line #" << lineNumber << '\n';
+                    file.close();
+                    return;
+                }
 
                 try
                 {
@@ -461,7 +471,13 @@ void parseEXPRFile(string fileName)
                 string parameterName = buffer.substr(openBracket + 1, end - openBracket - 1);
 
                 ss >> buffer;
-                assert(buffer == "=");
+
+                if(buffer != "=")
+                {
+                    cout << "Syntax Error at Line #" << lineNumber << '\n';
+                    file.close();
+                    return;
+                }
 
                 try 
                 {
@@ -487,6 +503,7 @@ void parseEXPRFile(string fileName)
             else 
             {
                 cout << "Syntax Error at Line #" << lineNumber << '\n';
+                file.close();
                 return;
             }
         }

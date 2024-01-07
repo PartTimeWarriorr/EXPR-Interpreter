@@ -56,6 +56,15 @@ ExpressionFunctionDefinition* SavedExpressions::getSavedFunctionBody(string name
 SavedExpressions* SavedExpressions::instancePointer = nullptr;
 
 //testing purposes only 
+void SavedExpressions::printSavedVariables()
+{
+    for(auto var : savedVariableNames)
+    {
+        cout << var.first << ' ' << var.second << '\n';
+    }
+}
+
+//testing purposes only 
 void SavedExpressions::printSavedFunctions()
 {
     for(auto fun : savedFunctionDefinitions)

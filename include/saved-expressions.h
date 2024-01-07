@@ -34,6 +34,7 @@ class SavedExpressions
     void saveFunction(string name, ExpressionFunctionDefinition* definition);
     ExpressionFunctionDefinition* getSavedFunctionBody(string);
 
+    void printSavedVariables();
     void printSavedFunctions();
 
     void popArgumentStack();

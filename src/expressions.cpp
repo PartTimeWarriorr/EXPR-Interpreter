@@ -118,11 +118,21 @@ void ExpressionRead::readValueFromInput() const
     string buffer;
     cin >> buffer;
     cin.ignore();
-    if(!isConstant(buffer))
+
+    int value;
+
+    try
     {
-        throw std::invalid_argument("Invalid input: Read variable value must be a number. Error at Line #");
+        value = stoi(buffer);
     }
-    SavedExpressions::getInstance()->saveVariable(varToReceiveValue->getName(), stoi(buffer));
+    catch(const std::exception& exc)
+    {
+        throw std::invalid_argument("Invalid input.\nMake sure that value is a number and not higher than 2147483647.\nError at Line #");
+
+    }
+    
+    SavedExpressions::getInstance()->saveVariable(varToReceiveValue->getName(), value);
+    
 }
 
 int ExpressionRead::getValue() const
