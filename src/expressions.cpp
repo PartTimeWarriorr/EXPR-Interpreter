@@ -23,6 +23,9 @@ ExpressionVar* ExpressionVar::clone()
 
 int ExpressionVar::getValue() const
 {
+    // If the argument stack is not empty and the parameter at the top of the stack has this variable's 
+    // name, return the argument at the top of the stack. Argument stack is used when evaluating 
+    // function calls to recognize the ExpressionVar node as a parameter.
     if(!SavedExpressions::getInstance()->isEmptyArgumentStack() && SavedExpressions::getInstance()->topArgumentStack().first == this->name)
     {
         return SavedExpressions::getInstance()->topArgumentStack().second;
@@ -50,7 +53,12 @@ ExpressionBinaryOperator* ExpressionBinaryOperator::clone()
 }
 
 int ExpressionBinaryOperator::getValue() const
-{
+{   
+    // Checks for division by zero.
+    if(symbol == '/' && right->getValue() == 0)
+    {
+        throw std::invalid_argument("Logical Error: Division by 0 at Line #");
+    }
 
     return computeExpression(symbol)(left->getValue(), right->getValue());
 }
@@ -107,9 +115,14 @@ ExpressionRead* ExpressionRead::clone()
 
 void ExpressionRead::readValueFromInput() const
 {
-    int buffer;
+    string buffer;
     cin >> buffer;
-    SavedExpressions::getInstance()->saveVariable(varToReceiveValue->getName(), buffer);
+    cin.ignore();
+    if(!isConstant(buffer))
+    {
+        throw std::invalid_argument("Invalid input: Read variable value must be a number. Error at Line #");
+    }
+    SavedExpressions::getInstance()->saveVariable(varToReceiveValue->getName(), stoi(buffer));
 }
 
 int ExpressionRead::getValue() const
@@ -204,7 +217,10 @@ ExpressionFunctionCall* ExpressionFunctionCall::clone()
 
 int ExpressionFunctionCall::getValue() const
 {
-
+    // The function call refers to the saved function definition with the same name. 
+    // It pushes the parameter of the function definition to the stack so that it is recognized when
+    // evaluating the function call. After getting the result the parameter is popped.
+    // Works recursively with nested functions.
     ExpressionFunctionDefinition* functionDefinition = SavedExpressions::getInstance()->getSavedFunctionBody(this->name);
     
     SavedExpressions::getInstance()->pushArgumentStack(functionDefinition->getParameterName(), argument->getValue());

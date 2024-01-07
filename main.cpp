@@ -4,6 +4,6 @@
 int main()
 {
 
-    parseEXPRFile("nested.txt");
+    parseEXPRFile("dividebyzero.txt");
 
 }

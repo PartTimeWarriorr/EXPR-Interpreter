@@ -35,7 +35,6 @@ bool isOperator(char symbol)
            symbol == '*' || 
            symbol == '%' || 
            symbol == '/' || 
-           symbol == '^' || 
            symbol == '(' || 
            symbol == ')';
 }
@@ -47,7 +46,6 @@ bool isOperator(string symbol)
            symbol == "*" || 
            symbol == "%" || 
            symbol == "/" || 
-           symbol == "^" || 
            symbol == "(" || 
            symbol == ")";
 }
@@ -78,12 +76,12 @@ bool isFunctionDefinition(string name)
         return false;
     }
 
-    // string parameterName = name.substr(openPosition + 1, closePosition - openPosition - 1);
+    string parameterName = name.substr(openPosition + 1, closePosition - openPosition - 1);
 
-    // if(!isVariableName(parameterName))
-    // {
-    //     return false;
-    // }
+    if(!isVariableName(parameterName))
+    {
+        return false;
+    }
 
     return true;
 }
@@ -128,13 +126,15 @@ bool isFunctionCall(string name)
     return true;
 }
 
+// Get the corresponding closing bracket to a function's opening bracket. 
+// In the case of multiple nested functions: "X[Y[3] + Z[a+X[2*3]]]" returns outmost bracket.
 size_t getFunctionClosingBracket(const string& name)
 {
     size_t openingBracket = name.find('[');
+
     if(openingBracket == string::npos)
     {
-        cout << "Syntax Error at Line #8\n";
-        return -1;
+        throw std::invalid_argument("Function opening bracket '[' cannot be found.\nSyntax Error at Line #");
     }
 
     int openOccurrence = 0, closeOccurence = 0;
@@ -157,8 +157,7 @@ size_t getFunctionClosingBracket(const string& name)
         }
     }
 
-    cout << "Syntax Error at Line #9\n";
-    return -1;
+    throw std::invalid_argument("Unbalanced function brackets.\nSyntax Error at Line #");
 }
 
 Expression* buildExpressionTree(stringstream& ss)
@@ -199,9 +198,16 @@ Expression* buildExpressionTree(stringstream& ss)
             string argumentString = expression.substr(openBracket + 1, expression.length() - openBracket - 2);
             stringstream argumentStream(argumentString);
             
-            parseExpressionString(argumentStream);
+            try
+            {
 
-            convertExpressionToPostfix(argumentStream);
+                parseExpressionString(argumentStream);
+                convertExpressionToPostfix(argumentStream);
+            }
+            catch(const std::exception& exc)
+            {
+                throw std::invalid_argument("Unrecognized function arguments.\nSyntax Error at Line #");
+            }
             
 
             Expression* argumentTreeRoot = buildExpressionTree(argumentStream);
@@ -225,10 +231,14 @@ void parseExpressionString(stringstream& ss)
         expressionString += buffer;
     }
 
+    if(expressionString.empty())
+    {
+        throw std::invalid_argument("Syntax Error at Line #");
+    }
+
     if(isOperator(expressionString[0]))
     {
-        cout << "Syntax Error at Line #1\n";
-        return;
+        throw std::invalid_argument("Expression cannot begin with an operator.\nSyntax Error at Line #");
     }
 
     string resultStreamString;
@@ -249,8 +259,7 @@ void parseExpressionString(stringstream& ss)
 
             if(!SavedExpressions::getInstance()->isSavedVariable(variableName) && variableName != SavedExpressions::getInstance()->topArgumentStack().first)
             {
-                cout << "Syntax Error at Line #2\n";
-                return;
+                throw std::invalid_argument("Unrecognized variable name.\nSyntax Error at Line #");
             }
 
             resultStreamString += variableName;
@@ -259,35 +268,15 @@ void parseExpressionString(stringstream& ss)
         }
         else if(isupper(expressionString[0]))
         {   
-            // size_t end = expressionString.find(']');
-            // if(end == string::npos)
-            // {
-            //     cout << "Syntax Error at Line #3\n";
-            //     return;
-            // }
 
             size_t end = getFunctionClosingBracket(expressionString);
 
             size_t openBracket = expressionString.find('[');
-            if(openBracket == string::npos)
-            {
-                cout << "Syntax Error at Line #4\n";
-                return;
-            }
 
             if(!SavedExpressions::getInstance()->isSavedFunctionDefinition(expressionString.substr(0, openBracket)))
             {
-                cout << "Syntax Error at Line #5\n";
-                return;
+                throw std::invalid_argument("Unrecognized function name.\nSyntax Error at Line #");
             }
-
-            // if(!SavedExpressions::getInstance()->isSavedVariable(expressionString.substr(openBracket + 1, end - openBracket - 1)) && 
-            //    expressionString.substr(openBracket + 1, end - openBracket - 1) != SavedExpressions::currentParameter)
-            // {   
-            //     cout << expressionString.substr(openBracket + 1, end - openBracket - 1) << ' ' << SavedExpressions::currentParameter << '\n';
-            //     cout << "Syntax Error at Line #6\n";
-            //     return;
-            // }
 
             resultStreamString += expressionString.substr(0, end + 1);
             resultStreamString += ' ';
@@ -301,9 +290,8 @@ void parseExpressionString(stringstream& ss)
         }
         else 
         {
-            cout << expressionString << '\n';
-            cout << "Syntax Error at Line #7\n";
-            return;
+            
+            throw std::invalid_argument("Syntax Error at Line #");
         }
     }
 
@@ -355,9 +343,7 @@ void convertExpressionToPostfix(stringstream& ss)
         }
         else 
         {
-            cout << buffer << '\n';
-            cout << "Syntax Error on Line #\n";
-            return;
+            throw std::invalid_argument("Syntax Error at Line #");
         }
     }
 
@@ -385,9 +371,11 @@ void parseEXPRFile(string fileName)
 {   
     ifstream file(fileName);
     string line = "";
+    int lineNumber = 0;
 
     while(!file.eof())
     {
+        ++lineNumber;
         getline(file, line);
         stringstream ss(line);
         string buffer;
@@ -400,24 +388,43 @@ void parseEXPRFile(string fileName)
                 ss >> buffer;
                 assert(buffer == "=");
 
-                parseExpressionString(ss);
-                convertExpressionToPostfix(ss);
-                Expression* expressionTreeRoot = buildExpressionTree(ss);
-
-                ExpressionAssignmentOperator assignment(new ExpressionVar(varName), expressionTreeRoot);
-                assignment.assignValueToVar();
-            }
-
-            if(isReservedWord(buffer))
-            {
-                if(buffer == "print")
-                {   
+                try
+                {
                     parseExpressionString(ss);
                     convertExpressionToPostfix(ss);
                     Expression* expressionTreeRoot = buildExpressionTree(ss);
 
-                    ExpressionPrint print(expressionTreeRoot);
-                    print.printTree();
+                    ExpressionAssignmentOperator assignment(new ExpressionVar(varName), expressionTreeRoot);
+                    assignment.assignValueToVar();
+                }
+                catch(const std::exception& exc)
+                {
+                    cout << exc.what() << lineNumber << '\n';
+                    file.close();
+                    return;
+                }
+                
+            }
+            else if(isReservedWord(buffer))
+            {
+                if(buffer == "print")
+                {  
+                    try
+                    {
+                        parseExpressionString(ss);
+                        convertExpressionToPostfix(ss);
+                        Expression* expressionTreeRoot = buildExpressionTree(ss);
+
+                        ExpressionPrint print(expressionTreeRoot);
+                        print.printTree();
+                    }
+                    catch(const std::exception& exc)
+                    {
+                        cout << exc.what() << lineNumber << '\n';
+                        file.close();
+                        return;
+                    }
+                     
                 }
 
                 if(buffer == "read")
@@ -425,12 +432,28 @@ void parseEXPRFile(string fileName)
                     ss >> buffer;
                     string toBeRead = buffer;
 
-                    ExpressionRead read(new ExpressionVar(toBeRead));
-                    read.readValueFromInput();
+                    if(!ss)
+                    {
+                        cout << "Variable name cannot be empty.\nSyntax Error at Line #" << lineNumber << '\n';
+                        file.close();
+                        return;
+                    }
+                    
+                    try
+                    {
+                        ExpressionRead read(new ExpressionVar(toBeRead));
+                        read.readValueFromInput();
+                    }
+                    catch(const std::exception& exc)
+                    {
+                        cout << exc.what() << lineNumber << '\n';
+                        file.close();
+                        return;
+                    }
+
                 }
             }
-
-            if(isFunctionDefinition(buffer))
+            else if(isFunctionDefinition(buffer))
             {
                 size_t openBracket = buffer.find('[');
                 string functionName = buffer.substr(0, openBracket);
@@ -440,17 +463,34 @@ void parseEXPRFile(string fileName)
                 ss >> buffer;
                 assert(buffer == "=");
 
-                SavedExpressions::getInstance()->pushArgumentStack(parameterName, 0);
+                try 
+                {
+                    SavedExpressions::getInstance()->pushArgumentStack(parameterName, 0);
 
-                parseExpressionString(ss);
-                convertExpressionToPostfix(ss);
-                Expression* expressionTreeRoot = buildExpressionTree(ss);
+                    parseExpressionString(ss);
+                    convertExpressionToPostfix(ss);
+                    Expression* expressionTreeRoot = buildExpressionTree(ss);
 
-                SavedExpressions::getInstance()->popArgumentStack();
+                    SavedExpressions::getInstance()->popArgumentStack();
 
-                ExpressionFunctionDefinition* newFunction = new ExpressionFunctionDefinition(functionName, parameterName, expressionTreeRoot);
-                newFunction->assignFunction();
+                    ExpressionFunctionDefinition* newFunction = new ExpressionFunctionDefinition(functionName, parameterName, expressionTreeRoot);
+                    newFunction->assignFunction();
+                }
+                catch(const std::exception& exc)
+                {
+                    cout << exc.what() << lineNumber << '\n';
+                    file.close();
+                    return;
+                }
+                
+            }
+            else 
+            {
+                cout << "Syntax Error at Line #" << lineNumber << '\n';
+                return;
             }
         }
     }
+
+    file.close();
 }

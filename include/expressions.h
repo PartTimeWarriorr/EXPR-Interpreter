@@ -63,7 +63,6 @@ class ExpressionBinaryOperator : public Expression
     virtual ~ExpressionBinaryOperator() override;
 
     public:
-    // private:
     Expression* left;
     Expression* right;
 
@@ -155,15 +154,3 @@ class ExpressionFunctionCall : public Expression
     string name;
     const Expression* argument; 
 };
-
-// bonus
-
-// class ExpressionIfStatement : public Expression
-// {
-
-// };
-
-// class ExpressionForCycle : public Expression
-// {
-
-// };
