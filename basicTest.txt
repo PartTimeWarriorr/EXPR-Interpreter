@@ -1,8 +1,0 @@
-D[x] = 3+x-1
-Y[y] = 2+y
-print Y[2] + D[3]
-a = D[2]
-
-Z[z] = D[1]+z
-print Z[2]
-print 239
