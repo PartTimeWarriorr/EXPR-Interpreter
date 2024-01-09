@@ -440,6 +440,7 @@ void parseEXPRFile(string fileName)
 
     while(!file.eof())
     {
+        // Parse file line by line
         ++lineNumber;
         getline(file, line);
         stringstream ss(line);
@@ -447,11 +448,13 @@ void parseEXPRFile(string fileName)
 
         while(ss >> buffer)
         {
+            // If string is recognized as a variable name (contains only lowercase letters)
             if(isVariableName(buffer))
             {   
                 string varName = buffer;
                 ss >> buffer;
                 
+                // A variable can only be initialized with the assignment operator "="
                 if(buffer != "=")
                 {
                     cout << "Syntax Error at Line #" << lineNumber << '\n';
@@ -461,12 +464,13 @@ void parseEXPRFile(string fileName)
 
                 try
                 {
+                    // Parses expression and assigns it to the variable name 
                     parseExpressionString(ss);
                     convertExpressionToPostfix(ss);
                     Expression* expressionTreeRoot = buildExpressionTree(ss);
 
                     ExpressionAssignmentOperator assignment(new ExpressionVar(varName), expressionTreeRoot);
-                    assignment.assignValueToVar();
+                    assignment.assignValueToVar(); // Saves variable in SavedExpressions map
                 }
                 catch(const std::exception& exc)
                 {
@@ -476,12 +480,13 @@ void parseEXPRFile(string fileName)
                 }
                 
             }
-            else if(isReservedWord(buffer))
+            else if(isReservedWord(buffer)) // "print" or "read"
             {
                 if(buffer == "print")
                 {  
                     try
                     {
+                        // Parses expression and prints its evaluation
                         parseExpressionString(ss);
                         convertExpressionToPostfix(ss);
                         Expression* expressionTreeRoot = buildExpressionTree(ss);
@@ -512,6 +517,7 @@ void parseEXPRFile(string fileName)
                     
                     try
                     {
+                        // Requests user input and sets the variable to the input's value
                         ExpressionRead read(new ExpressionVar(toBeRead));
                         read.readValueFromInput();
                     }
@@ -524,8 +530,9 @@ void parseEXPRFile(string fileName)
 
                 }
             }
-            else if(isFunctionDefinition(buffer))
-            {
+            else if(isFunctionDefinition(buffer)) // If string is recognized as a function definition (example: FUN[param])
+            {   
+                // Finds function name and parameter name
                 size_t openBracket = buffer.find('[');
                 string functionName = buffer.substr(0, openBracket);
                 size_t end = buffer.find(']');
@@ -533,7 +540,7 @@ void parseEXPRFile(string fileName)
 
                 ss >> buffer;
 
-                if(buffer != "=")
+                if(buffer != "=") // A function can only be assigned with the assignment operator "="
                 {
                     cout << "Syntax Error at Line #" << lineNumber << '\n';
                     file.close();
@@ -542,14 +549,17 @@ void parseEXPRFile(string fileName)
 
                 try 
                 {
-                    SavedExpressions::getInstance()->pushArgumentStack(parameterName, 0);
+                    // Pushes parameter to the argument stack only so that it can recognized as a variable name and the function body 
+                    // can be built properly.
+                    SavedExpressions::getInstance()->pushArgumentStack(parameterName, 0); 
 
                     parseExpressionString(ss);
                     convertExpressionToPostfix(ss);
                     Expression* expressionTreeRoot = buildExpressionTree(ss);
 
-                    SavedExpressions::getInstance()->popArgumentStack();
+                    SavedExpressions::getInstance()->popArgumentStack(); // Pops parameter name from stack
 
+                    // Constructs new function and saves it in SavedExpressions map
                     ExpressionFunctionDefinition* newFunction = new ExpressionFunctionDefinition(functionName, parameterName, expressionTreeRoot);
                     newFunction->assignFunction();
                 }
@@ -563,6 +573,7 @@ void parseEXPRFile(string fileName)
             }
             else 
             {
+                // Any other input will result in a Syntax Error
                 cout << "Syntax Error at Line #" << lineNumber << '\n';
                 file.close();
                 return;
