@@ -18,12 +18,18 @@ int getOperatorPriority(char symbol)
 
 int getOperatorPriority(string symbol)
 {
-    if(symbol == "+" || symbol == "-")
-        return 1;
-    else if(symbol == "*" || symbol == "/" || symbol == "%")
-        return 2;
-    else 
-        return 0;
+    switch(symbol[0])
+    {
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+        case '%':
+            return 2;
+        default:
+            return 0;
+    }
 }
 
 std::function<int(int, int)> computeExpression(char symbol)

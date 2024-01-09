@@ -1,5 +1,2 @@
-D[x] = 32 * x
-a = 67
-print D[2+a]
-
-read a
+D[x] = 2 + x
+print (((D[2]))+2)

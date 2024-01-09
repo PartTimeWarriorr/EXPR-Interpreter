@@ -13,6 +13,8 @@ SavedExpressions* SavedExpressions::getInstance()
     return instancePointer;
 }
 
+SavedExpressions* SavedExpressions::instancePointer = nullptr;
+
 void SavedExpressions::saveVariable(string name, const Expression*& expression)
 {
     savedVariableNames[name] = expression->getValue();
@@ -32,6 +34,7 @@ bool SavedExpressions::isSavedVariable(string name)
 {
     return savedVariableNames.count(name);
 }
+
 bool SavedExpressions::isSavedFunctionDefinition(string name)
 {
     return savedFunctionDefinitions.count(name);
@@ -44,6 +47,11 @@ bool SavedExpressions::isFunctionParameterName(string name, string parameterName
 
 void SavedExpressions::saveFunction(string name, ExpressionFunctionDefinition* definition)
 {
+    if(definition == nullptr)
+    {
+        savedFunctionDefinitions[name] = nullptr;
+        return;
+    }
     savedFunctionDefinitions[name] = definition->clone();
     
 }
@@ -53,9 +61,8 @@ ExpressionFunctionDefinition* SavedExpressions::getSavedFunctionBody(string name
     return savedFunctionDefinitions[name];
 }
 
-SavedExpressions* SavedExpressions::instancePointer = nullptr;
 
-//testing purposes only 
+// testing purposes only 
 void SavedExpressions::printSavedVariables()
 {
     for(auto var : savedVariableNames)
@@ -64,7 +71,7 @@ void SavedExpressions::printSavedVariables()
     }
 }
 
-//testing purposes only 
+// testing purposes only 
 void SavedExpressions::printSavedFunctions()
 {
     for(auto fun : savedFunctionDefinitions)
@@ -91,4 +98,16 @@ pair<string, int> SavedExpressions::topArgumentStack()
 bool SavedExpressions::isEmptyArgumentStack()
 {
     return functionArgumentStack.empty();
+}
+
+// testing purposes only
+void SavedExpressions::clearSavedVariables()
+{
+    savedVariableNames.clear();
+}
+
+// testing purposes only
+void SavedExpressions::clearSavedFunctions()
+{
+    savedFunctionDefinitions.clear();
 }

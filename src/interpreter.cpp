@@ -28,6 +28,19 @@ bool isVariableName(string name)
     return true;
 }
 
+bool isConstant(string name)
+{
+    for(char c : name)
+    {
+        if(c < '0' || c > '9')
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool isOperator(char symbol)
 {
     return symbol == '+' || 
@@ -48,6 +61,15 @@ bool isOperator(string symbol)
            symbol == "/" || 
            symbol == "(" || 
            symbol == ")";
+}
+
+bool isBinaryOperator(char symbol)
+{
+    return symbol == '+'||
+           symbol == '-' ||
+           symbol == '*' ||
+           symbol == '%' ||
+           symbol == '/';
 }
 
 bool isFunctionDefinition(string name)
@@ -81,19 +103,6 @@ bool isFunctionDefinition(string name)
     if(!isVariableName(parameterName))
     {
         return false;
-    }
-
-    return true;
-}
-
-bool isConstant(string name)
-{
-    for(char c : name)
-    {
-        if(c < '0' || c > '9')
-        {
-            return false;
-        }
     }
 
     return true;
@@ -240,15 +249,16 @@ void parseExpressionString(stringstream& ss)
         throw std::invalid_argument("Syntax Error at Line #");
     }
 
-    if(isOperator(expressionString[0]))
+    if(isBinaryOperator(expressionString[0]))
     {
-        throw std::invalid_argument("Expression cannot begin with an operator.\nSyntax Error at Line #");
+        throw std::invalid_argument("Expression cannot begin with a binary operator.\nSyntax Error at Line #");
     }
 
     string resultStreamString;
 
     while(!expressionString.empty())
     {
+
         if(isdigit(expressionString[0]))
         {
             size_t end = expressionString.find_first_not_of("0123456789");
@@ -288,6 +298,12 @@ void parseExpressionString(stringstream& ss)
         }
         else if(isOperator(expressionString[0]))
         {
+            
+            if(!resultStreamString.empty() && isBinaryOperator(resultStreamString[resultStreamString.length() - 2]) && isBinaryOperator(expressionString[0]))
+            {
+                throw std::invalid_argument("Expression cannot have two consecutive operators.\nSyntax Error at Line #");
+            }
+
             resultStreamString += expressionString[0];
             resultStreamString += " ";
             expressionString.erase(0, 1);
@@ -297,6 +313,7 @@ void parseExpressionString(stringstream& ss)
             
             throw std::invalid_argument("Syntax Error at Line #");
         }
+        
     }
 
     ss = stringstream(resultStreamString);
@@ -370,7 +387,6 @@ void convertExpressionToPostfix(stringstream& ss)
 
 }
 
-// WIP
 void parseEXPRFile(string fileName)
 {   
     ifstream file(fileName);

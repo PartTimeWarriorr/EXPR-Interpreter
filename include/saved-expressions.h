@@ -24,15 +24,14 @@ class SavedExpressions
 
     void saveVariable(string, const Expression*&);
     void saveVariable(string, int);
+    void saveFunction(string name, ExpressionFunctionDefinition* definition);
 
     int getSavedVariableValue(string);
+    ExpressionFunctionDefinition* getSavedFunctionBody(string);
 
     bool isSavedVariable(string);
     bool isSavedFunctionDefinition(string);
     bool isFunctionParameterName(string, string);
-
-    void saveFunction(string name, ExpressionFunctionDefinition* definition);
-    ExpressionFunctionDefinition* getSavedFunctionBody(string);
 
     void printSavedVariables();
     void printSavedFunctions();
@@ -41,4 +40,7 @@ class SavedExpressions
     void pushArgumentStack(string, int);
     pair<string, int> topArgumentStack();
     bool isEmptyArgumentStack();
+
+    void clearSavedVariables();
+    void clearSavedFunctions();
 };
