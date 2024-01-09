@@ -3,8 +3,6 @@
 #include "catch2/catch_all.hpp"
 #include <sstream>
 
-// Should check for memory leaks in interpreter!!
-
 TEST_CASE("ExpressionConst - clone function")
 {
     // Initializing object and clone
