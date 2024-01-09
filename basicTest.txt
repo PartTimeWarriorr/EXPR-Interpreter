@@ -3,12 +3,6 @@ Y[y] = 2+y
 print Y[2] + D[3]
 a = D[2]
 
-
-
 Z[z] = D[1]+z
 print Z[2]
 print 239
-
-
-
-Z[Y[20]+D[a]+3]+Y[3]
