@@ -29,6 +29,7 @@ size_t getFunctionClosingBracket(const string& name);
 
 Expression* buildExpressionTree(stringstream& ss);
 void parseExpressionString(stringstream& ss);
+bool hasBalancedParentheses(const string& expression);
 void convertExpressionToPostfix(stringstream& ss);
 void parseEXPRFile(string fileName);
 

@@ -233,6 +233,40 @@ Expression* buildExpressionTree(stringstream& ss)
     return treeNodeStack.top();
 }
 
+bool hasBalancedParentheses(const string& expression)
+{
+    stack<char> parenthesesStack;
+
+    for(char c : expression)
+    {
+
+        if(c == '(' || c == ')')
+        {
+
+            if(parenthesesStack.empty())
+            {
+                parenthesesStack.push(c);
+            }
+            else if(parenthesesStack.top() == '(' && c == ')')
+            {
+                parenthesesStack.pop();
+            }
+            else 
+            {
+                parenthesesStack.push(c);
+            }
+        }
+
+    }
+
+    if(parenthesesStack.empty())
+    {
+        return true;
+    }
+
+    return false;
+}
+
 // Parse Expression to generalize all input, eg. a + 2*b% ABC[c] -> a + 2 * b % ABC[c]
 void parseExpressionString(stringstream& ss)
 {
@@ -247,6 +281,11 @@ void parseExpressionString(stringstream& ss)
     if(expressionString.empty())
     {
         throw std::invalid_argument("Syntax Error at Line #");
+    }
+
+    if(!hasBalancedParentheses(expressionString))
+    {
+        throw std::invalid_argument("Unbalanced parentheses.\nSyntax Error at Line #");
     }
 
     if(isBinaryOperator(expressionString[0]))
@@ -313,7 +352,7 @@ void parseExpressionString(stringstream& ss)
             
             throw std::invalid_argument("Syntax Error at Line #");
         }
-        
+
     }
 
     ss = stringstream(resultStreamString);
@@ -392,6 +431,12 @@ void parseEXPRFile(string fileName)
     ifstream file(fileName);
     string line = "";
     int lineNumber = 0;
+
+    if(!file.is_open())
+    {
+        cout << "Unable to open file\n";
+        return;
+    }
 
     while(!file.eof())
     {
